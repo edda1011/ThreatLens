@@ -1,1 +1,1 @@
-# mini-soc-analyst-lab
+# ThreatLens
