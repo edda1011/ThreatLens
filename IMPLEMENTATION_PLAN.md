@@ -4,7 +4,7 @@
 
 **Date:** 2026-09-01
 
-**Design:** `docs/specs/2026-09-01-threatlens-v0.1-design.md`
+**Specification:** `SPECIFICATION.md`
 
 ## Objective
 

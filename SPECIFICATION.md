@@ -1,4 +1,4 @@
-# ThreatLens v0.1 Design Specification
+# ThreatLens v0.1 Specification
 
 **Status:** Approved
 
