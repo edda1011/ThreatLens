@@ -7,8 +7,9 @@ the user can safely do next.
 
 > [!IMPORTANT]
 > ThreatLens is currently pre-alpha. The repository contains the approved v0.1
-> design, Python project foundation, typed models, and a tested 4625 XML parser;
-> live Windows event monitoring and detection are not implemented yet.
+> design, Python project foundation, typed models, a tested 4625 XML parser,
+> and an in-memory failed-login detection engine. Live Windows monitoring and
+> user-facing alert output are not implemented yet.
 
 ThreatLens is not a replacement for antivirus, EDR, or professional incident
 response. The absence of an alert does not prove that a device is safe.
@@ -35,6 +36,7 @@ Completed:
 - Python package and CLI entry-point foundation
 - typed security-event and alert models
 - Event ID 4625 XML normalization with synthetic fixture tests
+- repeated failed-login detection with rolling windows, escalation, and inactivity cooldown
 - reproducible dependency lock
 - pytest, Ruff, mypy, coverage, and build configuration
 - MIT License
@@ -42,7 +44,7 @@ Completed:
 Not yet implemented:
 
 - Windows Security Event Log collection
-- failed-login detection and alert output
+- human-readable and JSONL alert output
 
 Running the CLI currently displays help only.
 

@@ -242,16 +242,18 @@ v0.1 implements one rule: repeated failed logins against the same account from t
 Primary grouping key:
 
 ```text
-hostname + source_ip + target_username + logon_type
+hostname + source_ip + target_domain + target_username + logon_type
 ```
 
 When `source_ip` is unavailable, the fallback key is:
 
 ```text
-hostname + target_username + logon_type
+hostname + target_domain + target_username + logon_type
 ```
 
 An alert created from the fallback key has Low confidence and explicitly states that the source address was unavailable.
+
+Hostname, domain, and username comparisons are case-insensitive. Distinct domains, including an unknown domain, are kept separate to avoid merging different accounts with the same name.
 
 ### 10.2 Default thresholds
 
@@ -276,15 +278,21 @@ Count >10: update the count without repeated output during cooldown
 
 The default cooldown is 10 minutes and is measured from the most recent matching event. An alert period closes after the grouping key receives no matching event for the full cooldown duration. The next matching event starts a fresh period with a count of one; it does not immediately inherit the previous period's severity. Within an active period, output occurs only when Medium is first reached or the alert escalates to High.
 
+Internally, closed period metadata is retained for a further 30 seconds so eligible late arrivals can be placed in the correct period. Closed periods are omitted from active-alert queries. A new event at or beyond the full inactivity cooldown creates a fresh period immediately. If a delayed event predates that already resolved reset boundary, it is excluded with a `late_period_event` diagnostic instead of being merged into the new period; already emitted alerts are never retroactively merged.
+
+`event_count` is the total number of accepted failures in that alert period. Threshold decisions always use rolling-window counts, independently of this total. Technical details preserve the count and window that caused the most recent trigger. Emitted alerts are immutable snapshots; the current in-memory alert continues to update without emitting repeated output. An alert can start directly at High when its longer window qualifies without an earlier Medium trigger.
+
 ### 10.4 Time and ordering
 
 - Detection windows use `timestamp_utc`, not collection time.
 - `collected_at_utc` is retained for latency diagnostics.
 - Duplicate event UIDs are ignored.
-- Mildly out-of-order events are inserted into the appropriate event-time window.
+- Events up to 30 seconds behind the latest accepted event-time watermark are inserted into the appropriate window. Older arrivals are excluded and counted in sanitized diagnostics.
 - Events older than the selected lookback boundary are ineligible.
-- Invalid or implausibly future timestamps are diagnosed and excluded.
+- Events more than 5 seconds ahead of the explicitly supplied current time are diagnosed and excluded. Naive timestamps are rejected by the data model.
 - Lookback and live events may contribute to the same window.
+
+The startup lookback boundary is fixed at the monitoring start time minus the configured lookback. Deduplication identifiers are retained for cooldown plus the 30-second lateness allowance; identifiers older than this are unnecessary because their events are already outside the accepted arrival range. Expired observations and idle groups are removed in memory. The caller periodically invokes expiration when collection is idle.
 
 ## 11. Configuration
 
@@ -299,7 +307,7 @@ v0.1 exposes only bounded, validated settings:
 
 There is no scripting language, dynamically executable rule, or arbitrary expression engine.
 
-Validation must reject non-positive durations or thresholds, lookback values over 24 hours, a High threshold that is not greater than the Medium threshold, a High window shorter than the Medium window, and other internally inconsistent settings. Invalid configuration prevents monitoring from starting and produces an actionable error.
+Validation rejects non-positive durations or thresholds, durations over 24 hours, a High threshold that is not greater than the Medium threshold, a High window shorter than the Medium window, and a cooldown shorter than the High window. Invalid configuration prevents monitoring from starting and produces an actionable error.
 
 ## 12. Output and Data Retention
 
