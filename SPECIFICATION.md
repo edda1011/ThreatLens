@@ -328,7 +328,11 @@ By default:
 - Only the minimum rolling-window state remains in memory.
 - In-memory state disappears when the process exits.
 
-`--output jsonl` sends versioned structured alerts to standard output. An explicit `--save-alerts <path>` enables local persistence of structured alerts. The requested path is validated before collection begins. Saving raw events is not supported in v0.1.
+`--output jsonl` sends versioned structured alerts, including account and source identifiers, to standard output. An explicit `--save-alerts <path>` enables local persistence of redacted structured alerts. The writer creates a new UTF-8 JSONL file before collection begins; it rejects existing files and missing or unwritable parent directories rather than overwriting data or creating directories automatically. Each completed alert write is flushed; this is not a power-loss durability guarantee.
+
+Saved records replace the username, any available source IP, and any available target domain with `[redacted]`. Known mentions of these identifiers in explanation text are also masked. Missing values remain null. Timestamps, counts, severity, confidence, and rule/alert identifiers are retained; this is identifier redaction, not full anonymization. Console output retains identifiers for local investigation.
+
+Technical output accepts only documented fields (`event_id`, `target_domain`, `trigger_window_seconds`, `trigger_window_count`, `status`, and `sub_status`). Unknown technical fields are omitted, and status strings must be hexadecimal codes. Raw-event saving is not supported. Human output escapes terminal control characters, and JSONL escapes controls and Unicode line separators while preserving readable Unicode text.
 
 ## 13. Testing
 

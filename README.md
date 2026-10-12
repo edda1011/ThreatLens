@@ -8,8 +8,9 @@ the user can safely do next.
 > [!IMPORTANT]
 > ThreatLens is currently pre-alpha. The repository contains the approved v0.1
 > design, Python project foundation, typed models, a tested 4625 XML parser,
-> and an in-memory failed-login detection engine. Live Windows monitoring and
-> user-facing alert output are not implemented yet.
+> an in-memory failed-login detection engine, alert formatters, and an optional
+> redacted alert-file writer. CLI integration and live Windows monitoring are
+> not implemented yet.
 
 ThreatLens is not a replacement for antivirus, EDR, or professional incident
 response. The absence of an alert does not prove that a device is safe.
@@ -37,6 +38,8 @@ Completed:
 - typed security-event and alert models
 - Event ID 4625 XML normalization with synthetic fixture tests
 - repeated failed-login detection with rolling windows, escalation, and inactivity cooldown
+- human-readable and JSONL alert formatters
+- optional saving of redacted JSONL alerts to a new local file
 - reproducible dependency lock
 - pytest, Ruff, mypy, coverage, and build configuration
 - MIT License
@@ -44,9 +47,18 @@ Completed:
 Not yet implemented:
 
 - Windows Security Event Log collection
-- human-readable and JSONL alert output
+- CLI integration for monitoring, replay, and output options
 
 Running the CLI currently displays help only.
+
+The human formatter shows severity and confidence separately, explains that
+successful access was not evaluated, and places optional technical details last.
+JSONL output follows the versioned alert schema.
+
+The file writer is disabled by default. When explicitly enabled, it masks account
+names, source IP addresses, and domains; retains timestamps, counts, severity,
+and confidence; writes UTF-8 JSONL; and refuses to overwrite an existing file.
+Console output includes identifiers so users can investigate local activity.
 
 ## Supported Development Environment
 

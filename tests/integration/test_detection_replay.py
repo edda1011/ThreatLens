@@ -1,5 +1,6 @@
 """Synthetic XML traverses normalization and the actual rule engine."""
 
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -7,6 +8,8 @@ from threatlens.detection.repeated_failed_login import RepeatedFailedLoginRule
 from threatlens.models.alert import Severity
 from threatlens.models.event import IngestionMode, SecurityEvent
 from threatlens.normalization.failed_logon import normalize_failed_logon
+from threatlens.output.human import format_human
+from threatlens.output.jsonl import format_jsonl
 
 
 def test_xml_replay_emits_medium_and_high_once() -> None:
@@ -30,3 +33,5 @@ def test_xml_replay_emits_medium_and_high_once() -> None:
     assert [alert.severity for alert in alerts] == [Severity.MEDIUM, Severity.HIGH]
     assert alerts[0].alert_id == alerts[1].alert_id
     assert alerts[-1].technical_details["trigger_window_count"] == 10
+    assert "Not evaluated" in format_human(alerts[-1])
+    assert json.loads(format_jsonl(alerts[-1]))["severity"] == "high"
