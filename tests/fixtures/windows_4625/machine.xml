@@ -1,0 +1,19 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Security-Auditing" />
+    <EventID>4625</EventID>
+    <Version>0</Version>
+    <TimeCreated SystemTime="2026-09-02T12:00:00.123456700Z" />
+    <EventRecordID>4</EventRecordID>
+    <Channel>Security</Channel>
+    <Computer>TEST-PC</Computer>
+  </System>
+  <EventData>
+    <Data Name="TargetUserName">TEST-CLIENT$</Data>
+    <Data Name="TargetDomainName">EXAMPLE</Data>
+    <Data Name="LogonType">3</Data>
+    <Data Name="IpAddress">192.0.2.56</Data>
+    <Data Name="IpPort">51000</Data>
+    <Data Name="Status">0xc000006d</Data>
+  </EventData>
+</Event>

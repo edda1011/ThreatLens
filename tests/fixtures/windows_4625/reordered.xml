@@ -1,0 +1,19 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Security-Auditing" />
+    <EventID>4625</EventID>
+    <Version>0</Version>
+    <TimeCreated SystemTime="2026-09-02T12:00:00.123456700Z" />
+    <EventRecordID>6</EventRecordID>
+    <Channel>Security</Channel>
+    <Computer>TEST-PC</Computer>
+  </System>
+  <EventData>
+    <Data Name="UnknownFutureField">invented-value</Data>
+    <Data Name="IpAddress">::1</Data>
+    <Data Name="Status">0xc000006d</Data>
+    <Data Name="TargetUserName">sample-user</Data>
+    <Data Name="LogonType">2</Data>
+    <Data Name="IpPort">0</Data>
+  </EventData>
+</Event>

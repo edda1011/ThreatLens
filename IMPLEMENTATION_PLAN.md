@@ -34,9 +34,8 @@ Resolved application and development dependencies must be pinned in a committed 
 
 ```text
 ThreatLens/
-├── docs/
-│   ├── plans/
-│   └── specs/
+├── IMPLEMENTATION_PLAN.md
+├── SPECIFICATION.md
 ├── src/
 │   └── threatlens/
 │       ├── __init__.py
