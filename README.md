@@ -9,8 +9,8 @@ the user can safely do next.
 > ThreatLens is currently pre-alpha. The repository contains the approved v0.1
 > design, Python project foundation, typed models, a tested 4625 XML parser,
 > an in-memory failed-login detection engine, alert formatters, and an optional
-> redacted alert-file writer. CLI integration and live Windows monitoring are
-> not implemented yet.
+> redacted alert-file writer, and a working offline replay CLI. Live Windows
+> monitoring is not implemented yet.
 
 ThreatLens is not a replacement for antivirus, EDR, or professional incident
 response. The absence of an alert does not prove that a device is safe.
@@ -40,6 +40,7 @@ Completed:
 - repeated failed-login detection with rolling windows, escalation, and inactivity cooldown
 - human-readable and JSONL alert formatters
 - optional saving of redacted JSONL alerts to a new local file
+- CLI configuration validation and developer-only offline XML replay
 - reproducible dependency lock
 - pytest, Ruff, mypy, coverage, and build configuration
 - MIT License
@@ -47,9 +48,10 @@ Completed:
 Not yet implemented:
 
 - Windows Security Event Log collection
-- CLI integration for monitoring, replay, and output options
+- Windows preflight and live monitoring
 
-Running the CLI currently displays help only.
+The default `monitor` command currently exits with a clear not-implemented
+message. It does not read real Windows logs or report active protection.
 
 The human formatter shows severity and confidence separately, explains that
 successful access was not evaluated, and places optional technical details last.
@@ -59,6 +61,60 @@ The file writer is disabled by default. When explicitly enabled, it masks accoun
 names, source IP addresses, and domains; retains timestamps, counts, severity,
 and confidence; writes UTF-8 JSONL; and refuses to overwrite an existing file.
 Console output includes identifiers so users can investigate local activity.
+
+## Offline Replay (Development Only)
+
+From the repository with the virtual environment activated:
+
+```powershell
+python -m threatlens --help
+python -m threatlens replay --help
+python -m threatlens replay tests/fixtures/repeated_failed_login
+python -m threatlens replay tests/fixtures/repeated_failed_login --output jsonl
+```
+
+The repeated-login scenario emits Medium at 5 failures, then High at 10 failures,
+using the same alert ID. These are synthetic records, not real device activity.
+The original `tests/fixtures/windows_4625` directory exercises varied event
+shapes and one malformed record; it does not trigger an alert at default thresholds.
+
+Replay accepts one UTF-8 XML file or a directory of single-event XML files
+(non-recursive, case-insensitive `.xml` extension). It normalizes records using
+the existing parser, sorts by event time, and simulates startup at the newest
+valid event timestamp. `--lookback` is measured backward from that simulated
+startup, not today's clock. All replay records are labeled `lookback`; the human
+formatter's startup wording refers to this simulation. Replay is not live
+monitoring and does not test Windows permissions or collection reliability.
+
+Supported options, supplied after `replay <source>` or `monitor`:
+
+- `--lookback 10m` (maximum `24h`)
+- `--output human|jsonl` (default `human`)
+- `--technical` (human output only)
+- `--medium-threshold 5 --medium-window 2m`
+- `--high-threshold 10 --high-window 5m`
+- `--cooldown 10m`
+- `--save-alerts <new-file>` (redacted JSONL, regardless of console format)
+
+Durations use whole seconds, minutes, or hours (`30s`, `10m`, `1h`). The existing
+configuration relationships are enforced: High count exceeds Medium count,
+High window is at least Medium window, and cooldown is at least High window.
+Thresholds accept positive integers up to 10 digits. Replay is limited to 10,000
+files and 16 Mi characters of decoded XML input. Oversized or malformed records
+are skipped with sanitized diagnostic counts; missing/unreadable inputs and
+batches with no valid records fail. Timestamps at the datetime range limits
+are rejected if startup-window arithmetic would overflow.
+
+Only alert text or JSONL goes to stdout. Replay status, diagnostics, and errors
+go to stderr, so JSONL stdout remains parseable. Console alerts use UTF-8.
+No file is saved unless `--save-alerts` is provided. Use a new filename each time;
+the parent directory must already exist. An explicitly requested file can remain
+empty or partial when input fails or replay is interrupted.
+
+Exit codes: `0` for completed replay or Ctrl+C; `2` for argument/configuration/
+input errors; `1` for output failures, unsupported monitoring platforms, or the
+currently unimplemented live-monitor command. Offline replay works without
+Windows administrator privileges.
 
 ## Supported Development Environment
 

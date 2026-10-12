@@ -6,6 +6,10 @@
 
 **Specification:** `SPECIFICATION.md`
 
+**Progress (2026-10-13):** Phases 1–6 implemented and verified with automated
+checks. Phase 7 (Windows preflight and collection) is next. Live monitoring and
+manual Windows acceptance are not complete.
+
 ## Objective
 
 Implement the approved ThreatLens v0.1 scope as a foreground Windows CLI that reads Event ID 4625, normalizes failed-logon records, detects repeated failures in memory, and emits careful human-readable or JSONL alerts.
